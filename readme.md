@@ -5,7 +5,7 @@ Inspired by the [Walking Signals Wifi Zine Workshop](https://hackersanddesigners
 It uses
 
 #### Screenshot
-![screenshot of internot](http://url/screenshot.png "screenshot")
+![screenshot of internot](screenshot.png "screenshot")
 
 ## Usage
 ```$ git clone https://github.com/swummoq/ESP32_internot.git
