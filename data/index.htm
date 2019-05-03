@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <title>Internot</title>
+        <title></title>
+        <style>
+        body{
+            color: blue;
+        }
+        input, textarea{
+            border-color: blue;
+            color: blue;
+        }
+        textarea{
+            display: block;
+        }
+
+        header{
+            text-align: center;
+        }
+        #container{
+            max-width: 80%;
+            margin:  0 auto;
+        }
+        #messages, .form{
+            box-sizing: border-box;
+            padding: 20px;
+            width: 50%;
+            float: left;
+        }
+        </style>
+        <script src="zepto.min.js"></script>
+        <script type="text/javascript">
+              $( init );
+              function init(){
+                $d = $( "#messages" );
+                $.getJSON( '/messages', '', function( data, status ){
+                    $.each( data, function( i, dat ){
+                        $d.append( '<div>' + dat + '</div>')
+                    });
+                } );
+              }
+        </script>
+    </head>
+    <body>
+
+    <div id="container">
+        <header>
+            <h1>INTERNOT</h1>
+            <h2>XS4Some – local messaging board</h2>
+        </header>
+        <div id="messages">
+
+        </div>
+        <div class="form">
+            <form action="/post" method="post" id="checkForm">
+                <textarea rows="4" type="text" name="message"></textarea>
+                <input type="submit" value="Send">
+            </form>
+        </div>
+    </div>
+    </body>
+</html>
