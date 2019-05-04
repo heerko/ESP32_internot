@@ -22,10 +22,11 @@ See [How-to](#how-to-use-this-code) below.
 
 ## How-to use this code
 * Install the ESP32 boards as per https://github.com/espressif/arduino-esp32/tree/master/docs/arduino-ide
-* Upload Internot.ino to the esp32
+* Install ArduinoJSON (in the IDE by going to Sketch > Include Library > Manage Libraries... > Search arduinoJson > Click install.
+* Upload Internot.ino to the ESP32
 * Upload the webpages to ESP32 by using Tools > ESP32 Sketch Data Upload
 * Connect to the new "Internot" wifi network
 * **Important note**: (Re)uploading the HTML files also wipes the stored comments!
 
-##Todo
-* Add escaping/filtering/validation to the input. This just a quick prove of concept, it does no filtering/validation on any of the input. Horrible things will probably happen if you try to input weird characters. 
+## Todo
+* Add escaping/filtering/validation to the input. This just a quick prove of concept, it does no filtering/validation on any of the input. Horrible things will probably happen if you try to input weird characters.

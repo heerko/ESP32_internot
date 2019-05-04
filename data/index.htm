@@ -38,7 +38,7 @@
                 $d = $( "#messages" );
                 $.getJSON( '/messages', '', function( data, status ){
                     $.each( data, function( i, dat ){
-                        $d.append( '<div>' + dat + '</div>')
+                        $d.append( '<div>' + dat.name +" says: " + dat.message + '</div>')
                     });
                 } );
               }
@@ -56,7 +56,8 @@
         </div>
         <div class="form">
             <form action="/post" method="post" id="checkForm">
-                <textarea rows="4" type="text" name="message"></textarea>
+                <input name="name" placeholder="your name" required/>
+                <textarea rows="4" maxlength="144" type="text" required name="message" placeholder="your message"></textarea>
                 <input type="submit" value="Send">
             </form>
         </div>

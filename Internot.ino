@@ -24,6 +24,7 @@
 /*  CONFIGURATIONS                     */
 /***************************************/
 const bool is_AP = true; // Set to false to just run as webserver, convenient for testing.
+const bool is_AP = false; // Set to false to just run as webserver, convenient for testing.
 
 const char* ssid = "YOUR_SSID"; // Wifi credentials
 const char* password = "YOUR_PASSWORD";
@@ -97,12 +98,9 @@ void setup() {
     Serial.println(WiFi.localIP());
     IP = WiFi.localIP().toString();
   }
-
-  Serial.println( "IP is: " + IP );
-
-  //file system
-  SPIFFS.begin();
-  getJSONFromFile();
+ 
+  SPIFFS.begin();   //file system
+  JSONFromFile();
 
   //dns service (captive portal)
   dnsServer.start(53, "*", apIP); // reply with provided IP(apIP) to all("*") DNS request
@@ -110,37 +108,24 @@ void setup() {
   server.on("/post", HTTP_ANY, [](AsyncWebServerRequest * request) {
     //List all parameters
     Serial.println( "Request for /post" );
-
+    JsonObject message = doc.createNestedObject(); // create object for storing the message
     int params = request->params();
     for (int i = 0; i < params; i++) {
       AsyncWebParameter* p = request->getParam(i);
-      Serial.println(p->name().c_str() );
       if (p->isFile()) { //p->isPost() is also true
         Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
       } else if (p->isPost()) {
-        Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        //messages = messages + p->value().c_str();
-        //        messages
-        String mess = p->value().c_str();
-        Serial.println( "Got: " + mess );
-        doc.add(mess);
+        String key = p->name().c_str();
+        String value = p->value().c_str();
+        Serial.printf("POST[%s]: %s\n", key, value);
+        message[key] = value;
       } else {
         Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
       }
     }
-
-    File file = SPIFFS.open("/messages.json", FILE_WRITE);
-    String json = "";
-    serializeJson(doc, json);
-    Serial.println( "Save json: "  + json );
-    if (file.print(json)) {
-      Serial.println("File was written");
-    } else {
-      Serial.println("File write failed");
-    }
-    file.close();
-    // redirect back to the form
-    request->redirect(String("http://") + IP + "/");
+    
+    JSONToFile(); // save the message to file
+    request->redirect(String("http://") + IP + "/"); // redirect back to the form
   });
 
   server.on("/messages", HTTP_ANY, [](AsyncWebServerRequest * request) {
@@ -172,12 +157,22 @@ void onRequest(AsyncWebServerRequest * request) {
   request->redirect(String("http://") + apIP.toString() + "/");
 }
 
-void getJSONFromFile() {
+void JSONFromFile() {
   File file = SPIFFS.open("/messages.json", FILE_READ);
   String s = file.readString();
   Serial.println( "Read: " + s );
   deserializeJson(doc, s);
-//  JsonArray array = doc.to<JsonArray>();
+  //  JsonArray array = doc.to<JsonArray>();
+  file.close();
+}
+
+void JSONToFile() {
+  File file = SPIFFS.open("/messages.json", FILE_WRITE);
+  String json = "";
+  serializeJson(doc, json);
+  if (!file.print(json)) {
+    Serial.println("File write failed");
+  }
   file.close();
 }
 
