@@ -64,10 +64,10 @@ String IP = "";
 
 void setup() {
   //serial monitoring
-  Serial.begin(115200);
-  Serial.setDebugOutput(true);
-  delay(10);
-  Serial.println("START");
+  Serial.begin( 115200 );
+  Serial.setDebugOutput( true );
+  delay( 10 );
+  Serial.println( "START" );
 
   SPIFFS.begin();   //file system
   JSONFromFile();
@@ -75,115 +75,112 @@ void setup() {
 
   //wifi
   if ( is_AP ) {
-    WiFi.mode(WIFI_AP);
-    
+    WiFi.mode( WIFI_AP );
+
     //start ap
-    WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(AP_ssid.c_str(), NULL, 6); //channel selection : 6 (choose one among 6-13 for world-wide accessibility)
+    WiFi.softAPConfig( apIP, apIP, IPAddress( 255, 255, 255, 0 ) );
+    WiFi.softAP( AP_ssid.c_str(), NULL, 6 ); //channel selection : 6 (choose one among 6-13 for world-wide accessibility)
 
     //my ip
-    delay(500);
-    Serial.print("Captive Network. IP address:"); Serial.println(WiFi.softAPIP());
+    delay( 500 );
+    Serial.print( "Captive Network. IP address:" ); Serial.println( WiFi.softAPIP() );
     IP = WiFi.softAPIP().toString();
   } else {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
+    WiFi.mode( WIFI_STA );
+    WiFi.begin( ssid, password );
 
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
+    while ( WiFi.status() != WL_CONNECTED ) {
+      delay( 500 );
+      Serial.print( "." );
     }
 
-    Serial.print("Connected to ");
-    Serial.println(ssid);
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+    Serial.print( "Connected to " );  Serial.println( ssid );
+    Serial.print( "IP address: " ); Serial.println( WiFi.localIP() );
     IP = WiFi.localIP().toString();
   }
 
   //dns service (captive portal)
-  dnsServer.start(53, "*", apIP); // reply with provided IP(apIP) to all("*") DNS request
+  dnsServer.start( 53, "*", apIP ); // reply with provided IP(apIP) to all("*") DNS request
 
-  server.on("/post", HTTP_ANY, [](AsyncWebServerRequest * request) {
+  server.on( "/post", HTTP_ANY, []( AsyncWebServerRequest * request ) {
     //List all parameters
     Serial.println( "Request for /post" );
     JsonObject message = doc.createNestedObject(); // create object for storing the message
     int params = request->params();
-    for (int i = 0; i < params; i++) {
-      AsyncWebParameter* p = request->getParam(i);
-      if (p->isFile()) { //p->isPost() is also true
-        Serial.printf("FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-      } else if (p->isPost()) {
+    for ( int i = 0; i < params; i++ ) {
+      AsyncWebParameter* p = request->getParam( i );
+      if ( p->isFile() ) { //p->isPost() is also true
+        Serial.printf( "FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size() );
+      } else if ( p->isPost() ) {
         String key = p->name().c_str();
         String value = p->value().c_str();
-        Serial.printf("POST[%s]: %s\n", key, value);
-        message[key] = value;
+        Serial.printf( "POST[%s]: %s\n", key, value );
+        message[ key ] = value;
       } else {
-        Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        Serial.printf( "GET[%s]: %s\n", p->name().c_str(), p->value().c_str() );
       }
     }
 
     JSONToFile(); // save the message to file
-    request->redirect(String("http://") + IP + "/"); // redirect back to the form
-  });
+    request->redirect( String( "http://" ) + IP + "/" ); // redirect back to the form
+  } );
 
-  server.on("/messages", HTTP_ANY, [](AsyncWebServerRequest * request) {
+  server.on( "/messages", HTTP_ANY, [](AsyncWebServerRequest * request ) {
     //List all parameters
     Serial.println( "Request for /messages" );
 
-    AsyncResponseStream *response = request->beginResponseStream("text/plain");
-    response->addHeader("Server", "ESP Async Web Server");
-    response->addHeader("Access-Control-Allow-Origin", "*"); // allows for testing from a static file:// url
+    AsyncResponseStream *response = request->beginResponseStream( "text/plain" );
+    response->addHeader( "Server", "ESP Async Web Server" );
+    response->addHeader( "Access-Control-Allow-Origin", "*" ); // allows for testing from a static file:// url
     String json = "";
-    serializeJson(doc, json);
+    serializeJson( doc, json );
     response->print( json );
-    //send the response last
-    request->send(response);
+    request->send( response ); //send the response last
   });
 
   //serve-root
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
+  server.serveStatic( "/", SPIFFS, "/" ).setDefaultFile( "index.htm" );
 
-  server.onNotFound(onRequest);
+  server.onNotFound( onRequest );
 
   //start the web service
   server.begin();
 }
 
-void onRequest(AsyncWebServerRequest * request) {
+void onRequest( AsyncWebServerRequest * request ) {
   //Handle Unknown Request
   Serial.println( "Unknown request. Redirect to default" );
-  request->redirect(String("http://") + apIP.toString() + "/");
+  request->redirect( String( "http://" ) + apIP.toString() + "/" );
 }
 
 void JSONFromFile() {
-  File file = SPIFFS.open("/messages.json", FILE_READ);
+  File file = SPIFFS.open( "/messages.json", FILE_READ );
   String s = file.readString();
-  Serial.println( "Read: " + s );
-  deserializeJson(doc, s);
+  deserializeJson( doc, s );
   //  JsonArray array = doc.to<JsonArray>();
   file.close();
 }
 
 void JSONToFile() {
-  File file = SPIFFS.open("/messages.json", FILE_WRITE);
+  File file = SPIFFS.open( "/messages.json", FILE_WRITE );
   String json = "";
-  serializeJson(doc, json);
-  if (!file.print(json)) {
-    Serial.println("File write failed");
+  serializeJson( doc, json );
+  if ( ! file.print( json ) ) {
+    Serial.println( "File write failed" );
   }
   file.close();
 }
 
 String getSSIDFromFile() {
   String ssid = "Internot";
-  File root = SPIFFS.open("/");
+  File root = SPIFFS.open( "/" );
   File file = root.openNextFile();
   while (file) {
     String n = file.name();
-    String ext = n.substring(n.lastIndexOf("."));
-    if( ext == ".ssid" ){
-      ssid = n.substring(1,n.lastIndexOf(".")); // first index is 1 to skip the /
+    int dot = n.lastIndexOf(".")
+              String ext = n.substring( dot );
+    if ( ext == ".ssid" ) {
+      ssid = n.substring( 1, dot ); // first index is 1 to skip the "/"
     }
     file = root.openNextFile();
   }
