@@ -177,8 +177,8 @@ String getSSIDFromFile() {
   File file = root.openNextFile();
   while (file) {
     String n = file.name();
-    int dot = n.lastIndexOf(".")
-              String ext = n.substring( dot );
+    int dot = n.lastIndexOf(".");
+    String ext = n.substring( dot );
     if ( ext == ".ssid" ) {
       ssid = n.substring( 1, dot ); // first index is 1 to skip the "/"
     }
