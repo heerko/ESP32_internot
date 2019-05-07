@@ -24,7 +24,8 @@ See [How-to](#how-to-use-this-code) below.
 * Install the ESP32 boards as per https://github.com/espressif/arduino-esp32/tree/master/docs/arduino-ide
 * Install ArduinoJSON (in the IDE by going to Sketch > Include Library > Manage Libraries... > Search arduinoJson > Click install.
 * Upload Internot.ino to the ESP32
-* Upload the webpages to ESP32 by using Tools > ESP32 Sketch Data Upload
+* (If necessary) modify and upload the webpages to ESP32 by using Tools > ESP32 Sketch Data Upload
+* Optionally, change the filename of the internot.ssid file to something else (keeping the .ssid extension) to change the network's SSID. 
 * Connect to the new "Internot" wifi network
 * **Important note**: (Re)uploading the HTML files also wipes the stored comments!
 

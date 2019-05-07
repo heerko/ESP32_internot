@@ -24,13 +24,12 @@
 /*  CONFIGURATIONS                     */
 /***************************************/
 const bool is_AP = true; // Set to false to just run as webserver, convenient for testing.
-const bool is_AP = false; // Set to false to just run as webserver, convenient for testing.
 
 const char* ssid = "YOUR_SSID"; // Wifi credentials
 const char* password = "YOUR_PASSWORD";
 
 // AP identifications & credentials
-const char* hostName = "Internot";
+String AP_ssid = "Internot";
 
 /***************************************/
 /*  ALL HEADERS and GLOBAL VARIABLES   */
@@ -68,16 +67,19 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   delay(10);
-  Serial.printf("START\n");
+  Serial.println("START");
+
+  SPIFFS.begin();   //file system
+  JSONFromFile();
+  AP_ssid = getSSIDFromFile();
 
   //wifi
   if ( is_AP ) {
     WiFi.mode(WIFI_AP);
-    WiFi.setHostname(hostName);
-
+    
     //start ap
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(hostName, NULL, 6); //channel selection : 6 (choose one among 6-13 for world-wide accessibility)
+    WiFi.softAP(AP_ssid.c_str(), NULL, 6); //channel selection : 6 (choose one among 6-13 for world-wide accessibility)
 
     //my ip
     delay(500);
@@ -98,9 +100,6 @@ void setup() {
     Serial.println(WiFi.localIP());
     IP = WiFi.localIP().toString();
   }
- 
-  SPIFFS.begin();   //file system
-  JSONFromFile();
 
   //dns service (captive portal)
   dnsServer.start(53, "*", apIP); // reply with provided IP(apIP) to all("*") DNS request
@@ -123,7 +122,7 @@ void setup() {
         Serial.printf("GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
       }
     }
-    
+
     JSONToFile(); // save the message to file
     request->redirect(String("http://") + IP + "/"); // redirect back to the form
   });
@@ -174,6 +173,21 @@ void JSONToFile() {
     Serial.println("File write failed");
   }
   file.close();
+}
+
+String getSSIDFromFile() {
+  String ssid = "Internot";
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+  while (file) {
+    String n = file.name();
+    String ext = n.substring(n.lastIndexOf("."));
+    if( ext == ".ssid" ){
+      ssid = n.substring(1,n.lastIndexOf(".")); // first index is 1 to skip the /
+    }
+    file = root.openNextFile();
+  }
+  return ssid;
 }
 
 void loop() {
