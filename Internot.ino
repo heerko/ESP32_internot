@@ -180,7 +180,13 @@ String getSSIDFromFile() {
     int dot = n.lastIndexOf(".");
     String ext = n.substring( dot );
     if ( ext == ".ssid" ) {
-      ssid = n.substring( 1, dot ); // first index is 1 to skip the "/"
+			// if the file starts with a "/", skip it
+			// older versions of spiFFS add a "/" to the beginning of the file name
+			if ( n[0] == '/' ) {
+				ssid = n.substring( 1, dot ); // first index is 1 to skip the "/"
+			} else {
+				ssid = n;
+			}
     }
     file = root.openNextFile();
   }
