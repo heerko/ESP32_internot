@@ -185,7 +185,7 @@ String getSSIDFromFile() {
 			if ( n[0] == '/' ) {
 				ssid = n.substring( 1, dot ); // first index is 1 to skip the "/"
 			} else {
-				ssid = n;
+				ssid = n.substring( 0, dot ); // otherwise not :)
 			}
     }
     file = root.openNextFile();
